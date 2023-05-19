@@ -8,7 +8,14 @@ export default function Set({ set, index }) {
   const { setSets } = useAppConsumer();
 
   const Card = ({ card }) => (
-    <Box>
+    <Box
+      borderRadius="md"
+      borderWidth="1px"
+      p={4}
+      shadow="md"
+      minH="20vh"
+      minW="15vw"
+    >
       <Heading size="sm">{card.term}</Heading>
       {card.definition}
     </Box>
@@ -28,22 +35,47 @@ export default function Set({ set, index }) {
       copy[index].active = !copy[index].active;
       return copy;
     });
-  }
+  };
 
   return (
-    <Box>
+    <Box
+      p={4}
+      borderWidth="1px"
+      borderRadius="lg"
+      mb={3}
+      shadow="md"
+      maxW="40vw"
+    >
       <Heading>{name}</Heading>
       {len + " term" + (len > 1 ? "s" : "")}
-      <HStack>
+      <HStack
+        mt={2}
+        overflowX="auto"
+        spacing={2}
+        sx={{
+          "&::-webkit-scrollbar": {
+            width: "4px",
+          },
+          "&::-webkit-scrollbar-track": {
+            width: "6px",
+          },
+          "&::-webkit-scrollbar-thumb": {
+            background: "lightgrey",
+            borderRadius: "24px",
+          },
+        }}
+      >
         {cards.map((card, i) => (
           <Card card={card} key={i} />
         ))}
+      </HStack>
+      <HStack mt={2}>
+        <Checkbox onChange={toggleActiveMaker(index)} isChecked={active} />
         <Button>
           <RouteLink to={index.toString()}>Edit</RouteLink>
         </Button>
         <Button onClick={removeHandlerMaker(index)}>Remove</Button>
       </HStack>
-      <Checkbox onChange={toggleActiveMaker(index)} isChecked={active} />
     </Box>
   );
 }

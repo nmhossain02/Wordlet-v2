@@ -17,6 +17,7 @@ export default function PlayPage() {
         .filter((set) => set.active)
         .reduce((acc, set) => acc.concat(set.cards), [])
     );
+    console.log(cards[currentCardIndex]);
   }, [sets, currentCardIndex]);
 
   useEffect(() => {
@@ -24,8 +25,6 @@ export default function PlayPage() {
       cards.length == 0 ? 0 : mod(prev, cards.length)
     );
   }, [cards]);
-
-  const roundElement = useRef();
 
   const indexChanger = (direction) => (event) => {
     setCurrentCardIndex(mod((currentCardIndex + direction), cards.length));
@@ -40,7 +39,7 @@ export default function PlayPage() {
         <Button onClick={indexChanger(+1)}> next </Button>
       </HStack>
       Definition: {cards[currentCardIndex].definition}
-      <Round ref={roundElement} target={cards[currentCardIndex].term} gameState={""}/>
+      <Round target={cards[currentCardIndex].term} gameState={""}/>
     </>
   ) : (
     "no sets are active"

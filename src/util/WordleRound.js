@@ -55,4 +55,5 @@ export default class WordleRound {
     }
     getGuesses() { return this.guesses; }
     getGameWon() { return this.gameWon; }
+    getTarget() { return this.target; } 
 }
