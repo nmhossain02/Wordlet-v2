@@ -73,7 +73,6 @@ function Round({ gameState, target }) {
       animate(lastGuessed.current, { y: [0, -10, 0], opacity: [0.5, 0.5, 1.0] }, { duration: 0.25 });
     }
   }, [currentGuess]);
-  //
 
   const keyDownHandler = (event) => {
     if (round.current.getGameWon()) {
