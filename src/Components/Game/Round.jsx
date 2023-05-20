@@ -1,13 +1,15 @@
 import { Box, Center, HStack, VStack } from "@chakra-ui/react";
 import { useEffect, useRef, useState } from "react";
 import WordleRound from "../../util/WordleRound";
-import { motion, animate } from "framer-motion";
+import { motion, animate, stagger, AnimatePresence } from "framer-motion";
 
 function Round({ gameState, target }) {
   const lastEntered = useRef(null);
   const lastDeleted = useRef(null);
   const lastGuessed = useRef(null);
+  const newGuess = useRef(null);
   const lastInput = useRef(null);
+
   const Guess = ({ guess, index, ...rest }) => {
     const { current = false } = { ...rest };
     const Letter = ({ letter, color, index }) => {
@@ -31,12 +33,13 @@ function Round({ gameState, target }) {
         </Center>
       );
     };
+
     const isLastGuessed = index === round.current.getGuesses().length - 1;
 
     return (
       <HStack
         as={motion.div}
-        ref={isLastGuessed ? lastGuessed : null}
+        ref={isLastGuessed ? lastGuessed : current ? newGuess : null}
       >
         {guess.map((l, index) => (
           <Letter {...l} index={index} key={index} />
@@ -46,6 +49,11 @@ function Round({ gameState, target }) {
   };
 
   const round = useRef(new WordleRound(target));
+  const emptyGuess = () =>
+    Array(round.current.getTarget().length).fill({ letter: "", color: "gray" });
+  const [currentGuess, setCurrentGuess] = useState(emptyGuess());
+  const currentIndex = useRef(0);
+  const currentGuessString = useRef("");
 
   useEffect(() => {
     if (target !== round.current.getTarget()) {
@@ -55,28 +63,40 @@ function Round({ gameState, target }) {
       currentGuessString.current = "";
     }
   }, [target]);
-
-  // https://medium.com/geographit/accessing-react-state-in-event-listeners-with-usestate-and-useref-hooks-8cceee73c559
-  const emptyGuess = () =>
-    Array(round.current.getTarget().length).fill({ letter: "", color: "gray" });
-  const [currentGuess, setCurrentGuess] = useState(emptyGuess());
-  const currentIndex = useRef(0);
-  const currentGuessString = useRef("");
-
   useEffect(() => {
     currentGuessString.current = currentGuess.map((l) => l.letter).join("");
     if (lastEntered.current && lastInput.current !== "Backspace") {
-      animate(lastEntered.current, { scale: [0.5, 1.0] }, { duration: 0.25 });
-    }
-    else if (lastDeleted.current && lastInput.current === "Backspace") {
+      animate(
+        lastEntered.current,
+        { scale: [0.5, 1.0] },
+        { duration: 0.075, type: "spring", stiffness: 400 }
+      );
+    } else if (lastDeleted.current && lastInput.current === "Backspace") {
       animate(lastDeleted.current, { opacity: [0.5, 1.0] }, { duration: 0.25 });
+    } else if (lastGuessed.current && lastInput.current === "Enter") {
+      animate(
+        lastGuessed.current.children,
+        {
+          rotateZ: [-45, 0],
+          y: [-10, 0],
+          scale: [0.5, 1.0],
+          opacity: [0, 1.0],
+        },
+        { duration: 0.15, delay: stagger(0.05), type: "spring", stiffness: 200 }
+      );
+      if (newGuess.current) {
+        animate(
+          newGuess.current.children,
+          { y: [-10, 0], opacity: [0, 1.0] },
+          { duration: 0.25, delay: stagger(0.05) }
+        );
+      }
     }
-    // else if (lastGuessed.current && lastInput.current === "Enter") {
-    //   animate(lastGuessed.current, { y: [0, -10, 0], opacity: [0.5, 0.5, 1.0] }, { duration: 0.25 });
-    // }
   }, [currentGuess]);
 
+  // https://medium.com/geographit/accessing-react-state-in-event-listeners-with-usestate-and-useref-hooks-8cceee73c559
   const keyDownHandler = (event) => {
+    // Game complete
     if (round.current.getGameWon()) {
       return;
     }
@@ -87,6 +107,8 @@ function Round({ gameState, target }) {
     let newGuess = {};
     let newIndex = null;
     let maxLength = round.current.getTarget().length;
+
+    // guessable letter
     if (isAlnum(event.keyCode) && currentIndex.current < maxLength) {
       newGuess = {
         letter: event.key.toUpperCase(),
@@ -94,6 +116,8 @@ function Round({ gameState, target }) {
       };
       newIndex = currentIndex.current;
       currentIndex.current++;
+
+      // delete
     } else if (event.key === "Backspace") {
       currentIndex.current--;
       if (currentIndex.current < 0) {
@@ -101,13 +125,17 @@ function Round({ gameState, target }) {
       }
       newGuess = { letter: "", color: "gray" };
       newIndex = currentIndex.current;
+
+      // enter
     } else if (event.key === "Enter") {
       if (currentIndex.current === maxLength) {
         round.current.enterGuess(currentGuessString.current);
         currentIndex.current = 0;
-        setCurrentGuess(emptyGuess);
+        setCurrentGuess(emptyGuess());
       }
     }
+
+    // update state
     if (newIndex !== null) {
       setCurrentGuess((prev) => {
         const newGuessArray = [...prev];
@@ -116,7 +144,6 @@ function Round({ gameState, target }) {
       });
     }
   };
-
   useEffect(() => {
     document.addEventListener("keydown", keyDownHandler);
     return () => {
