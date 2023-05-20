@@ -51,6 +51,8 @@ function Round({ gameState, target }) {
     if (target !== round.current.getTarget()) {
       round.current = new WordleRound(target);
       setCurrentGuess(emptyGuess());
+      currentIndex.current = 0;
+      currentGuessString.current = "";
     }
   }, [target]);
 
@@ -69,9 +71,9 @@ function Round({ gameState, target }) {
     else if (lastDeleted.current && lastInput.current === "Backspace") {
       animate(lastDeleted.current, { opacity: [0.5, 1.0] }, { duration: 0.25 });
     }
-    else if (lastGuessed.current && lastInput.current === "Enter") {
-      animate(lastGuessed.current, { y: [0, -10, 0], opacity: [0.5, 0.5, 1.0] }, { duration: 0.25 });
-    }
+    // else if (lastGuessed.current && lastInput.current === "Enter") {
+    //   animate(lastGuessed.current, { y: [0, -10, 0], opacity: [0.5, 0.5, 1.0] }, { duration: 0.25 });
+    // }
   }, [currentGuess]);
 
   const keyDownHandler = (event) => {

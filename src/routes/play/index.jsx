@@ -17,7 +17,6 @@ export default function PlayPage() {
         .filter((set) => set.active)
         .reduce((acc, set) => acc.concat(set.cards), [])
     );
-    console.log(cards[currentCardIndex]);
   }, [sets, currentCardIndex]);
 
   useEffect(() => {
