@@ -60,7 +60,6 @@ const useAppProvider =
 
     useEffect(() => {
       localStorage.setItem(storageKey, JSON.stringify(sets));
-      console.log(sets);
     }, [sets]);
 
     return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
